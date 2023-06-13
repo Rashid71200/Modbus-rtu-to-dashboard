@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Power Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 20px;
+    }
+
+    .card {
+      background-color: #f4f4f4;
+      padding: 20px;
+      border-radius: 5px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .card p {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #777;
+    }
+
+    .gauge {
+      width: 200px;
+      height: 150px;
+      margin: 0 auto;
+    }
+
+    .value {
+      font-size: 24px;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Power Dashboard</h1>
+  <div class="dashboard">
+   
+    <div class="card">
+      <div class="gauge" id="frequencyGauge"></div>
+      <h2>Frequency</h2>
+      <p>Current frequency: <span id="frequencyValue">0Hz</span></p>
+    </div>
+    
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.4.1/justgage.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+  <script>
+
+var socket = io.connect("http://" + document.domain + ":" + location.port);
+var frequency = 0; // Declare the frequency variable outside the event handler
+
+var frequencyGauge = new JustGage({
+  id: "frequencyGauge",
+  value: 0,
+  min: 0,
+  max: 100,
+  title: "Frequency (Hz)",
+  label: "Hz"
+});
+
+// Update gauge value initially
+updateGaugeValues(frequency);
+
+// Example data update
+setInterval(function() {
+  console.log("socket.emit1");
+  socket.emit("update_value");
+  console.log("socket.emit2");
+}, 2000);
+
+// Receive updated value from server
+socket.on("update_value", function(data) {
+  frequency = data.value; // Update the frequency value
+  console.log("updateGaugeValues1");
+  updateGaugeValues(frequency);
+  console.log("updateGaugeValues2");
+});
+
+// Update gauge values
+function updateGaugeValues(frequency) {
+  frequencyGauge.refresh(frequency);
+  document.getElementById("frequencyValue").textContent = frequency + "Hz";
+}
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Power Dashboard</title>
+  <link rel="stylesheet" href="./cards.css">
+</head>
+<body>
+
+  <div id="dashboard_main">
+  
+
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.4.1/justgage.min.js"></script>
+  <script>
+    const dashboardData = [
+      { id: 1, title: 'Power Dashboard 1' },
+      { id: 2, title: 'Power Dashboard 2' },
+      { id: 3, title: 'Power Dashboard 3' },
+      { id: 4, title: 'Power Dashboard 4' }
+    ];
+
+    const dashboardMain = document.getElementById('dashboard_main');
+
+    dashboardData.forEach((dashboard) => {
+      const dashboardCont = document.createElement('div');
+      dashboardCont.classList.add('dashboard');
+
+      const dashboardTitle = document.createElement('h1');
+      dashboardTitle.textContent = dashboard.title;
+      dashboardCont.appendChild(dashboardTitle);
+
+      const metrics = ['Voltage', 'Current', 'Frequency', 'Power Consumption'];
+
+      metrics.forEach((metric) => {
+        const card = document.createElement('div');
+        card.classList.add('gauge');
+        card.id = `gauge_${dashboard.id}_${metric.replace(' ', '')}`;
+
+        const title = document.createElement('h2');
+        title.textContent = metric;
+        card.appendChild(title);
+
+        const value = document.createElement('p');
+        const valueSpan = document.createElement('span');
+        valueSpan.id = `value_${dashboard.id}_${metric.replace(' ', '')}`;
+        valueSpan.textContent = '0';
+        value.textContent = `Current ${metric.toLowerCase()}: `;
+        value.appendChild(valueSpan);
+        card.appendChild(value);
+
+        dashboardCont.appendChild(card);
+      });
+
+      dashboardMain.appendChild(dashboardCont);
+    });
+
+    var gauges = [];
+
+    for (var i = 1; i <= 4; i++) {
+      var voltageGauge = new JustGage({
+        id: `gauge_${i}_Voltage`,
+        value: 0,
+        min: 0,
+        max: 300,
+        title: 'Voltage (V)',
+        label: 'V'
+      });
+
+      var currentGauge = new JustGage({
+        id: `gauge_${i}_Current`,
+        value: 0,
+        min: 0,
+        max: 20,
+        title: 'Current (A)',
+        label: 'A'
+      });
+
+      var frequencyGauge = new JustGage({
+        id: `gauge_${i}_Frequency`,
+        value: 0,
+        min: 0,
+        max: 100,
+        title: 'Frequency (Hz)',
+        label: 'Hz'
+      });
+
+      var powerGauge = new JustGage({
+        id: `gauge_${i}_PowerConsumption`,
+        value: 0,
+        min: 0,
+        max: 10,
+        title: 'Power Consumption (KW)',
+        label: 'KW'
+      });
+
+      gauges.push({
+        voltage: voltageGauge,
+        current: currentGauge,
+        frequency: frequencyGauge,
+        power: powerGauge
+      });
+    }
+
+    // Update gauge values
+    function updateGaugeValues(gauges, voltage, current, frequency, power) {
+      gauges.forEach(function(gauge) {
+        gauge.voltage.refresh(voltage);
+        gauge.current.refresh(current);
+        gauge.frequency.refresh(frequency);
+        gauge.power.refresh(power);
+      });
+
+      for (var i = 1; i <= 4; i++) {
+        document.getElementById(`value_${i}_Voltage`).textContent = voltage + 'V';
+        document.getElementById(`value_${i}_Current`).textContent = current + 'A';
+        document.getElementById(`value_${i}_Frequency`).textContent = frequency + 'Hz';
+        document.getElementById(`value_${i}_PowerConsumption`).textContent = power + 'KW';
+      }
+    }
+
+    // Example data update
+    setInterval(function() {
+      var voltage = Math.floor(Math.random() * 301); // Generates a random integer between 0 and 300 (inclusive)
+      var current = Math.floor(Math.random() * 21); // Generates a random integer between 0 and 20 (inclusive)
+      var frequency = Math.floor(Math.random() * 101); // Generates a random integer between 0 and 100 (inclusive)
+      var power = Math.floor(Math.random() * 11); // Generates a random integer between 0 and 10 (inclusive)
+      updateGaugeValues(gauges, voltage, current, frequency, power);
+    }, 2000);
+  </script>
+</body>
+</html>
+

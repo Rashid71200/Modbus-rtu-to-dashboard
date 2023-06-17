@@ -1,0 +1,65 @@
+from pymodbus.client.sync import ModbusSerialClient
+from flask import Flask, render_template, request, session, redirect
+from flask_socketio import join_room, leave_room, send, SocketIO
+
+import time
+
+
+def start_modbus(update_value):
+    update_values = {
+        "voltage": 3546,
+        "current": 3654,
+        "frequency": 3756,
+        "power": 3878
+    }
+    value = 0
+    client = ModbusSerialClient(method="rtu", port="COM5", stopbits=1, bytesize=8, parity='N', baudrate=9600)
+    try:
+        client.connect()
+        result_ = client.read_holding_registers(address=update_values[update_value], count=1, unit=1)
+        value = result_.registers
+        value = value[0]
+        print(value + update_values[0])
+        client.close()
+        time.sleep(2)
+    except:
+        time.sleep(1)
+
+    return value
+
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = "ahrneloy"
+socketio = SocketIO(app)
+
+@app.route("/", methods=["POST", "GET"])
+def home():
+    return render_template("styledashboard.html")
+
+@socketio.on("voltage")
+def update_voltage():
+
+    value = start_modbus("voltage")
+    socketio.emit("voltage", {"value": value})
+
+@socketio.on("current")
+def update_current():
+
+    value = start_modbus("current")
+    socketio.emit("current", {"value": value})
+
+@socketio.on("frequency")
+def update_frequency():
+
+    value = start_modbus("frequency")
+    socketio.emit("frequency", {"value": value})
+
+@socketio.on("power")
+def update_power():
+
+    value = start_modbus("power")
+    socketio.emit("power", {"value": value})
+
+
+if __name__ == "__main__":
+    socketio.run(app, debug=True)

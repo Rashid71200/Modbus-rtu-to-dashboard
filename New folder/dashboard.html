@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Power Management Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+<h1>Power Management Dashboard</h1>
+<div class="row">
+<div class="col-md-6">
+<h2>Current Power Usage</h2>
+<p>The current power usage is 100 watts.</p>
+</div>
+<div class="col-md-6">
+<h2>Power Usage History</h2>
+<canvas id="powerUsageHistory" width="400" height="200"></canvas>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<h2>Power Usage Alerts</h2>
+<ul>
+<li>The power usage has exceeded 100 watts for 5 minutes.</li>
+<li>The power usage has been low for 1 hour.</li>
+</ul>
+</div>
+<div class="col-md-6">
+<h2>Power Usage Settings</h2>
+<form action="#">
+<input type="text" name="threshold" placeholder="Power usage threshold">
+<input type="submit" value="Save">
+</form>
+</div>
+</div>
+</div>
+</body>
+</html>

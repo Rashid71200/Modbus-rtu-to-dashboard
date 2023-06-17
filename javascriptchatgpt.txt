@@ -1,0 +1,101 @@
+    var voltageGauge; // Define the voltage gauge globally
+var currentGauge;
+
+var socket = io.connect("http://" + document.domain + ":" + location.port);
+var gauges = {};
+
+const dashboardMain = document.getElementById('dashboard_main');
+const num = 1;
+const num_card = 4;
+
+const gaugeConfig = {
+  voltage: { min: 0, max: 300, title: "Voltage (V)", label: "V" },
+  current: { min: 0, max: 100, title: "Current (A)", label: "A" },
+  frequency: { min: 0, max: 100, title: "Frequency (Hz)", label: "Hz" },
+  power: { min: 0, max: 110, title: "Power Consumption (KW)", label: "KW" }
+};
+
+function createDashboard() {
+  const dashboardTitle = document.createElement('div');
+  dashboardTitle.classList.add('dashboard');
+
+  const dashboardTitle_1 = document.createElement('h1');
+  dashboardTitle_1.textContent = `Power Dashboard:  ${num}`;
+
+  const dashboard_in = document.createElement('div');
+  dashboard_in.classList.add('dashboard_in');
+
+  dashboardTitle.appendChild(dashboardTitle_1);
+  dashboardTitle.appendChild(dashboard_in);
+  dashboardMain.appendChild(dashboardTitle);
+
+  for (var j = 1; j <= num_card; j++) {
+    const card = document.createElement('div');
+    card.classList.add('card');
+
+    const gauge = document.createElement('div');
+    gauge.classList.add('gauge');
+    gauge.id = `gauge_${j}_${num}`;
+
+    const val = document.createElement('h2');
+    val.textContent = `${gaugeConfig[Object.keys(gaugeConfig)[j - 1]].title}`;
+
+    const p = document.createElement('p');
+    p.textContent = `Current ${gaugeConfig[Object.keys(gaugeConfig)[j - 1]].title}`;
+
+    const valueSpan = document.createElement('span');
+    valueSpan.id = `value_${j}_${num}`;
+    valueSpan.textContent = `0${gaugeConfig[Object.keys(gaugeConfig)[j - 1]].label}`;
+
+    card.appendChild(gauge);
+    card.appendChild(val);
+    card.appendChild(p);
+    p.appendChild(valueSpan);
+    dashboard_in.appendChild(card);
+  }
+}
+
+function createGauges() {
+  for (var j = 1; j <= num_card; j++) {
+    var gauge = new JustGage({
+      id: `gauge_${j}_${num}`,
+      value: 0,
+      min: gaugeConfig[Object.keys(gaugeConfig)[j - 1]].min,
+      max: gaugeConfig[Object.keys(gaugeConfig)[j - 1]].max,
+      title: gaugeConfig[Object.keys(gaugeConfig)[j - 1]].title,
+      label: gaugeConfig[Object.keys(gaugeConfig)[j - 1]].label
+    });
+    gauges[`gauge_${j}_${num}`] = gauge;
+  }
+}
+
+function updateGaugeValues(update_value) {
+  console.log(update_value);
+  var update_values = update_value.split('$');
+
+  for (var key in update_values) {
+    var df = update_values[key];
+    var dfs = df.split('*');
+
+    var gau = `gauge_${dfs[0]}_${num}`;
+    var gauID = `value_${dfs[0]}_${num}`;
+
+    var gaugeObject = gauges[gau];
+    console.log(gaugeObject);
+    gaugeObject.refresh(dfs[1]);
+    document.getElementById(gauID).textContent = dfs[1] + gaugeConfig[dfs[0]].label;
+  }
+}
+
+createDashboard();
+createGauges();
+
+// Example data update
+setInterval(function() {
+  socket.emit("update");
+}, 2000);
+
+socket.on("update", function(data) {
+  var update_value = data.value; // Update the frequency value
+  updateGaugeValues(update_value);
+});
